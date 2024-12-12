@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北美食地圖</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        #map { height: 600px; }
+        .current-location-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .current-location-btn img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .back-home-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>台北美食地圖</h1>
+
+    <!-- 回到首頁按鈕 -->
+    <a href="/" class="back-home-btn">回到首頁</a>
+
+    <!-- 顯示地圖 -->
+    <div id="map"></div>
+
+    <!-- 定位按鈕 -->
+    <button class="current-location-btn" onclick="moveToCurrentLocation()">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/marker.png" alt="定位" />
+        當前位置
+    </button>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([25.0330, 121.5654], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        function moveToCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+                    map.setView([lat, lon], 15);
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup("您現在的位置")
+                        .openPopup();
+                }, function() {
+                    alert("無法取得您的位置，請檢查定位權限");
+                });
+            } else {
+                alert("您的瀏覽器不支持定位功能");
+            }
+        }
+
+        {% for restaurant in restaurants %}
+            L.marker([{{ restaurant.latitude }}, {{ restaurant.longitude }}])
+                .addTo(map)
+                .bindPopup('<b>{{ restaurant.name }}</b><br>{{ restaurant.type }}');
+        {% endfor %}
+    </script>
+</body>
+</html>
