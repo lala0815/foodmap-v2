@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} 詳細資訊</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .header a:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-detail {
+            margin-bottom: 20px;
+        }
+
+        img {
+            width: 300px;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-decoration: none;
+            color: #4CAF50;
+        }
+
+        .back-btn:hover {
+            color: #e91111;
+        }
+
+        .review-form {
+            margin-top: 30px;
+        }
+
+        .review-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .review-form select,
+        .review-form textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .review-form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            border-radius: 5px;
+        }
+
+        .review-form button:hover {
+            background-color: #45a049;
+        }
+
+        .reviews {
+            margin-top: 30px;
+        }
+
+        .review {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .review strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h2>{{ name }} 詳細資訊</h2>
+    
+        <div class="restaurant-detail">
+            <strong>餐廳類型:</strong> {{ type }}<br>
+            <strong>地址:</strong> {{ address }}<br>
+            <strong>電話:</strong> {{ phone }}<br>
+            <strong>負責人:</strong> {{ owner }}<br>
+            <strong>評分:</strong> {{ rating }}<i class="fas fa-star"></i><br>
+            <strong>介紹:</strong> <p>{{ description or '無介紹' }}</p>
+    
+            <!-- 顯示多張圖片 -->
+            {% if image %}
+                {% for img in image.split(',') %}
+                    <img src="{{ url_for('static', filename='images/' + img) }}" alt="{{ name }}" style="max-width: 300px; margin: 10px;">
+                {% endfor %}
+            {% else %}
+                <p>無圖片</p>
+            {% endif %}
+        </div>
+
+        <!-- 用戶提交評論的表單 -->
+        {% if 'user' in session %}
+        <div class="review-form">
+            <h3>新增評論</h3>
+            <form method="POST">
+                <label for="rating">評分：</label>
+                <select name="rating" required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select><br>
+
+                <label for="comment">留言：</label>
+                <textarea name="comment"></textarea><br>  <!-- 不再設為 required -->
+
+                <button type="submit">提交評論</button>
+            </form>
+        </div>
+        {% else %}
+        <p>請先登入後再提交評論。</p>
+        {% endif %}
+
+        <!-- 顯示已存在的評論 -->
+        <div class="reviews">
+            <h3>其他評論</h3>
+            {% for review in reviews %}
+            <div class="review">
+                <strong>{{ review.username }} - 評分: {{ review.rating }} 星</strong>
+                <p>{{ review.comment or '無評論' }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="/" class="back-btn">返回地圖</a>
+    </div>
+</body>
+</html>

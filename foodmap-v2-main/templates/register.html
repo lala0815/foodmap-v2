@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-container input {
+            padding-right: 30px; /* Space for the eye icon */
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message, .error-message {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: green;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>註冊</h2>
+        <form action="/register" method="post" onsubmit="return validatePasswords()">
+            <input type="text" name="username" placeholder="使用者名稱" required>
+            
+            <!-- 密碼欄位，加入顯示/隱藏的眼睛圖示 -->
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="密碼" required>
+                <span class="eye-icon" onclick="togglePassword()">
+                    🙈 <!-- 預設隱藏眼睛 -->
+                </span>
+            </div>
+
+            <div class="password-container">
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="再次確認密碼" required>
+                <span class="eye-icon" onclick="togglePassword()">
+                    🙈 <!-- 預設隱藏眼睛 -->
+                </span>
+            </div>
+
+            <button type="submit">註冊</button>
+        </form>
+        
+        <!-- 顯示註冊成功訊息 -->
+        {% if success_message %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+        
+        <!-- 顯示錯誤訊息 -->
+        {% if error_message %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+        
+        <div class="back-link">
+            <a href="/login">返回登入頁面</a>
+        </div>
+    </div>
+
+    <script>
+        function validatePasswords() {
+            var password = document.querySelector('[name="password"]').value;
+            var confirmPassword = document.querySelector('[name="confirm_password"]').value;
+
+            if (password !== confirmPassword) {
+                alert('兩次密碼輸入不一致，請重新確認');
+                return false;
+            }
+            return true;
+        }
+
+        function togglePassword() {
+            var passwordField = document.querySelector('#password');
+            var confirmPasswordField = document.querySelector('#confirm_password');
+            var eyeIcon = document.querySelectorAll('.eye-icon'); // 取得所有眼睛圖示
+
+            var type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
+            confirmPasswordField.type = type;
+
+            // 切換眼睛圖示
+            if (type === 'password') {
+                eyeIcon.forEach(icon => icon.textContent = '🙈'); // 隱藏密碼，顯示閉眼
+            } else {
+                eyeIcon.forEach(icon => icon.textContent = '👁️'); // 顯示密碼，顯示開眼
+            }
+        }
+    </script>
+</body>
+</html>

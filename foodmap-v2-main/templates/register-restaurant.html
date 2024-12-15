@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊餐廳</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message, .error-message {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: green;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        textarea {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical; /* 允許垂直調整大小 */
+            min-height: 100px; /* 設定最小高度 */
+        }
+
+        label {
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>註冊餐廳</h2>
+        <form action="/register-restaurant" method="post" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="餐廳名稱" required>
+            <input type="text" name="type" placeholder="餐廳類型" required>
+            <input type="text" name="latitude" placeholder="緯度" required>
+            <input type="text" name="longitude" placeholder="經度" required>
+            <input type="text" name="address" placeholder="餐廳地址" required>
+            <input type="text" name="phone" placeholder="餐廳電話" required>
+            <input type="text" name="owner" placeholder="負責人名稱" required>
+            <label for="image">餐廳圖片（可以選擇多張）:</label>
+            <input type="file" name="images" id="images" accept="image/*" multiple><br>
+            <textarea name="description" placeholder="餐廳描述，可輸入關鍵字，用戶能夠透過關鍵字搜尋到你的餐廳"></textarea>
+            <button type="submit">註冊</button>
+        </form>
+        
+        
+        <!-- 顯示成功或錯誤訊息 -->
+        {% if success_message %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+        {% if error_message %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+        
+        <div class="back-link">
+            <a href="/">返回首頁</a>
+        </div>
+    </div>
+</body>
+</html>
