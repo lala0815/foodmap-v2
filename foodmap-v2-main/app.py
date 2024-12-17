@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import uuid  # 用於生成唯一的圖片名稱
 import os
+import re
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # 替換為你的隨機密鑰
@@ -73,7 +74,7 @@ def register_restaurant():
 
         # 數據驗證：檢查必填欄位
         if not name or not type or not latitude or not longitude or not address or not phone:
-            error_message = '所有必填欄位（不包含圖片和描述）都是必填的！'
+            error_message = 'All required fields (excluding image and description) are mandatory.！'
             return render_template('register-restaurant.html', error_message=error_message)
 
         # 儲存餐廳資料至 CSV
@@ -125,8 +126,6 @@ def map():
 @app.route('/restaurant/<restaurant_name>', methods=['GET', 'POST'])
 def restaurant_details(restaurant_name):
     restaurant_df = pd.read_csv(RESTAURANT_DATA_FILE)
-    if restaurant_name not in restaurant_df['name'].values:
-        return "餐廳不存在", 404
 
     restaurant = restaurant_df[restaurant_df['name'] == restaurant_name].iloc[0]
     name = restaurant['name']
@@ -136,7 +135,7 @@ def restaurant_details(restaurant_name):
     owner = restaurant['owner']
     rating = restaurant['rating']
     image = str(restaurant['image']) if pd.notna(restaurant['image']) else ''
-    description = restaurant['description'] if pd.notna(restaurant['description']) else '無介紹'
+    description = restaurant['description'] if pd.notna(restaurant['description']) else 'No description'
 
     reviews_df = pd.read_csv(REVIEWS_FILE)
     reviews = reviews_df[reviews_df['restaurant_name'] == restaurant_name].to_dict(orient='records')
@@ -202,16 +201,29 @@ def login():
                 return redirect(url_for('index'))
 
         # 錯誤處理
-        error_message = '登入失敗，請檢查使用者名稱或密碼'
+        error_message = 'Login failed, please check your username or password.'
         return render_template('login.html', error_message=error_message)
 
     return render_template('login.html')
 
+# 註冊路由
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username').strip().lower()
         password = request.form.get('password').strip()
+        confirm_password = request.form.get('confirm_password').strip()
+
+        
+        # 檢查密碼複雜度
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$', password):
+            error_message = '"Password must contain both uppercase and lowercase letters, as well as numbers, and be at least 6 characters long."'
+            return render_template('register.html', error_message=error_message)
+        
+        # 檢查密碼和確認密碼是否匹配
+        if password != confirm_password:
+            error_message = 'The password and confirmation password do not match.'
+            return render_template('register.html', error_message=error_message)
 
         # 讀取用戶資料
         users = pd.read_csv(USER_DATA_FILE)
@@ -221,7 +233,7 @@ def register():
 
         # 檢查用戶是否已存在
         if username in users['username'].values:
-            error_message = '使用者名稱已被註冊'
+            error_message = 'The username is already taken.'
             return render_template('register.html', error_message=error_message)
 
         # 新增用戶
@@ -232,7 +244,7 @@ def register():
         users.to_csv(USER_DATA_FILE, index=False)
 
         # 註冊成功，顯示成功訊息並跳轉到登入頁面
-        flash('註冊成功！請返回登入頁面')
+        flash('Registration successful! Please return to the login page.')
         return redirect(url_for('login'))
 
     return render_template('register.html')

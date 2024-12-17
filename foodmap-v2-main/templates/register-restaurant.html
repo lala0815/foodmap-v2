@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>註冊餐廳</title>
+    <title>Register Restaurant</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("{{ url_for('static', filename='images/background.png') }}");
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -100,19 +113,19 @@
 </head>
 <body>
     <div class="container">
-        <h2>註冊餐廳</h2>
+        <h2>Register Restaurant</h2>
         <form action="/register-restaurant" method="post" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="餐廳名稱" required>
-            <input type="text" name="type" placeholder="餐廳類型" required>
-            <input type="text" name="latitude" placeholder="緯度" required>
-            <input type="text" name="longitude" placeholder="經度" required>
-            <input type="text" name="address" placeholder="餐廳地址" required>
-            <input type="text" name="phone" placeholder="餐廳電話" required>
-            <input type="text" name="owner" placeholder="負責人名稱" required>
-            <label for="image">餐廳圖片（可以選擇多張）:</label>
+            <input type="text" name="name" placeholder="Restaurant Name" required>
+            <input type="text" name="type" placeholder="Restaurant Type" required>
+            <input type="text" name="latitude" placeholder="Latitude" required>
+            <input type="text" name="longitude" placeholder="Longitude" required>
+            <input type="text" name="address" placeholder="Restaurant Address" required>
+            <input type="text" name="phone" placeholder="Restaurant Phone" required>
+            <input type="text" name="owner" placeholder="Owner Name" required>
+            <label for="image">Restaurant Images (multiple images allowed):</label>
             <input type="file" name="images" id="images" accept="image/*" multiple><br>
-            <textarea name="description" placeholder="餐廳描述，可輸入關鍵字，用戶能夠透過關鍵字搜尋到你的餐廳"></textarea>
-            <button type="submit">註冊</button>
+            <textarea name="description" placeholder="Restaurant description. Add keywords to help users search for your restaurant."></textarea>
+            <button type="submit">Register</button>
         </form>
         
         
@@ -125,7 +138,7 @@
         {% endif %}
         
         <div class="back-link">
-            <a href="/">返回首頁</a>
+            <a href="/">Back to Home</a>
         </div>
     </div>
 </body>

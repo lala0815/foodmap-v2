@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>註冊</title>
+    <title>Sign Up</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            background-image: url("{{ url_for('static', filename='images/background.png') }}");
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
         .container {
             width: 100%;
             max-width: 400px;
@@ -100,69 +106,58 @@
 </head>
 <body>
     <div class="container">
-        <h2>註冊</h2>
-        <form action="/register" method="post" onsubmit="return validatePasswords()">
-            <input type="text" name="username" placeholder="使用者名稱" required>
+        <h2>Sign Up</h2>
+        <form action="/register" method="post">
+            <input type="text" name="username" placeholder="Username" required>
             
-            <!-- 密碼欄位，加入顯示/隱藏的眼睛圖示 -->
+            <!-- Password field with show/hide toggle -->
             <div class="password-container">
-                <input type="password" name="password" id="password" placeholder="密碼" required>
+                <input type="password" name="password" id="password" placeholder="Password" required>
                 <span class="eye-icon" onclick="togglePassword()">
-                    🙈 <!-- 預設隱藏眼睛 -->
+                    🙈 <!-- Default hidden icon -->
                 </span>
             </div>
 
             <div class="password-container">
-                <input type="password" name="confirm_password" id="confirm_password" placeholder="再次確認密碼" required>
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
                 <span class="eye-icon" onclick="togglePassword()">
-                    🙈 <!-- 預設隱藏眼睛 -->
+                    🙈 <!-- Default hidden icon -->
                 </span>
             </div>
 
-            <button type="submit">註冊</button>
+            <button type="submit">Sign Up</button>
         </form>
         
-        <!-- 顯示註冊成功訊息 -->
+        <!-- Display success message -->
         {% if success_message %}
             <div class="success-message">{{ success_message }}</div>
         {% endif %}
         
-        <!-- 顯示錯誤訊息 -->
+        <!-- Display error message -->
         {% if error_message %}
             <div class="error-message">{{ error_message }}</div>
         {% endif %}
         
         <div class="back-link">
-            <a href="/login">返回登入頁面</a>
+            <a href="/login">Sign In</a>
         </div>
     </div>
 
     <script>
-        function validatePasswords() {
-            var password = document.querySelector('[name="password"]').value;
-            var confirmPassword = document.querySelector('[name="confirm_password"]').value;
-
-            if (password !== confirmPassword) {
-                alert('兩次密碼輸入不一致，請重新確認');
-                return false;
-            }
-            return true;
-        }
-
         function togglePassword() {
             var passwordField = document.querySelector('#password');
             var confirmPasswordField = document.querySelector('#confirm_password');
-            var eyeIcon = document.querySelectorAll('.eye-icon'); // 取得所有眼睛圖示
+            var eyeIcon = document.querySelectorAll('.eye-icon'); // Get all eye icons
 
             var type = passwordField.type === 'password' ? 'text' : 'password';
             passwordField.type = type;
             confirmPasswordField.type = type;
 
-            // 切換眼睛圖示
+            // Toggle eye icons
             if (type === 'password') {
-                eyeIcon.forEach(icon => icon.textContent = '🙈'); // 隱藏密碼，顯示閉眼
+                eyeIcon.forEach(icon => icon.textContent = '🙈'); // Hide password, show closed eyes
             } else {
-                eyeIcon.forEach(icon => icon.textContent = '👁️'); // 顯示密碼，顯示開眼
+                eyeIcon.forEach(icon => icon.textContent = '👁️'); // Show password, show open eyes
             }
         }
     </script>

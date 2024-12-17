@@ -3,23 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北美食地圖</title>
+    <title>Food Map</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-image: url("{{ url_for('static', filename='images/background.png') }}");
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
+    
         .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #333;
+            background-color: rgba(51, 51, 51, 0.9);
             color: white;
             padding: 10px 20px;
         }
-
+    
         .header a {
             color: white;
             text-decoration: none;
@@ -29,16 +41,27 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-
+    
         .header a:hover {
             background-color: #45a049;
         }
-
+    
         .container {
+            display: flex;
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
             text-align: center;
-            padding: 50px 20px;
+            background-color: rgba(255, 255, 255, 0.7); 
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
-
+    
+        .container h1 {
+            margin: 0 0 20px; 
+        }
+    
         .btn {
             padding: 15px 30px;
             font-size: 1.5em;
@@ -49,64 +72,30 @@
             cursor: pointer;
             text-decoration: none;
         }
-
+    
         .btn:hover {
             background-color: #45a049;
-        }
-
-        .search-form {
-            margin-bottom: 20px;
-        }
-
-        .search-form input {
-            padding: 10px;
-            width: 300px;
-            font-size: 1em;
-        }
-
-        .search-form button {
-            padding: 10px;
-            font-size: 1em;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .search-form button:hover {
-            background-color: #45a049;
-        }
-
-        .header .btn-container {
-            display: flex;
-            gap: 10px; /* Add gap between buttons */
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div>Taipei Food Map</div>
+        <div>Food Map</div>
         {% if logged_in %}
-            <!-- 若已登入，顯示註冊餐廳和登出按鈕 -->
             <div class="btn-container">
-                <a href="/register-restaurant" class="btn">註冊餐廳</a> <!-- 註冊餐廳按鈕 -->
-                <a href="/logout" class="btn">登出</a> <!-- 登出按鈕 -->
+                <a href="/register-restaurant" class="btn">Register Restaurant</a>
+                <a href="/logout" class="btn">Logout</a>
             </div>
         {% else %}
-            <!-- 若未登入，顯示登入按鈕 -->
-            <a href="/login" class="btn">登入</a>
+            <a href="/login" class="btn">Login</a>
         {% endif %}
     </div>
     <div class="container">
-        <h1>歡迎來到 台北美食地圖</h1>
-        
+        <h1>Welcome to the Food Map</h1>
         {% if logged_in %}
-            <!-- 若已登入，顯示歡迎訊息 -->
-            <p>你好，{{ username }}</p>
+            <p>Hello, {{ username }}</p>
         {% endif %}
-                
-        <a href="/map" class="btn">進入地圖</a>
+        <a href="/map" class="btn">Go to Map</a>
     </div>
 </body>
 </html>

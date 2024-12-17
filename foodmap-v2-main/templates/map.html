@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北美食地圖</title>
+    <title>Taipei Food Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -104,19 +104,19 @@
     </style>
 </head>
 <body>
-    <h1>台北美食地圖</h1>
+    <h1>Taipei Food Map</h1>
 
     <!-- 回到首頁按鈕 -->
-    <a href="/" class="back-home-btn">回到首頁</a>
+    <a href="/" class="back-home-btn">Back to Home</a>
 
     {% if logged_in %}
         <!-- 註冊餐廳按鈕，只有在登入時顯示 -->
-        <a href="/register-restaurant" class="register-restaurant-btn">註冊餐廳</a>
+        <a href="/register-restaurant" class="register-restaurant-btn">Register Restaurant</a>
     {% endif %}
 
     <!-- 搜尋框 -->
     <div class="search-container">
-        <input type="text" id="searchBox" placeholder="輸入關鍵字搜尋餐廳">
+        <input type="text" id="searchBox" placeholder="Enter keywords to search for restaurants">
     </div>
 
     <!-- 顯示地圖 -->
@@ -124,8 +124,8 @@
 
     <!-- 定位按鈕 -->
     <button class="current-location-btn" onclick="moveToCurrentLocation()">
-        <img src="https://img.icons8.com/ios-filled/50/ff6347/marker.png" alt="定位" />
-        當前位置
+        <img src="https://img.icons8.com/ios-filled/50/ff6347/marker.png" alt="Location" />
+        Current Location
     </button>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -147,23 +147,23 @@
     restaurantMarkers.length = 0;
 
     filteredRestaurants.forEach(restaurant => {
-        const phone = restaurant.phone || '無資料';
-        const rating = restaurant.rating || '無評分';
+        const phone = restaurant.phone || 'No Data';
+        const rating = restaurant.rating || 'No Rating';
         const image = restaurant.image ? `/images/${restaurant.image}` : 'default_image.jpg'; // 預設圖片
-        const description = restaurant.description || '無介紹';  // 若無描述則顯示 '無介紹'
-        const owner = restaurant.owner || '無負責人';  // 若無負責人資訊則顯示 '無負責人'
+        const description = restaurant.description || 'No Description';  // 若無描述則顯示 '無介紹'
+        const owner = restaurant.owner || 'No Owner Info';  // 若無負責人資訊則顯示 '無負責人'
 
         const marker = L.marker([restaurant.latitude, restaurant.longitude])
             .addTo(map)
             .bindPopup(`
                 <b>${restaurant.name}</b><br>
-                類型: ${restaurant.type}<br>
-                地址: ${restaurant.address}<br>
-                電話: ${phone}<br>
-                評分: ${rating} <i class="fas fa-star"></i><br>
-                負責人: ${owner}<br>
+                Type: ${restaurant.type}<br>
+                Address: ${restaurant.address}<br>
+                Phone: ${phone}<br>
+                Rating: ${rating} <i class="fas fa-star"></i><br>
+                Owner: ${owner}<br>
                 <p>${description}</p>
-                <a href="/restaurant/${restaurant.name}">詳細資訊</a>
+                <a href="/restaurant/${restaurant.name}">More Details</a>
             `);
         restaurantMarkers.push(marker);
     });
@@ -190,13 +190,13 @@
 
                     map.setView([lat, lon], 15);
                     L.marker([lat, lon], { icon: currentLocationIcon }).addTo(map)
-                        .bindPopup("您現在的位置")
+                        .bindPopup("Your Current Location")
                         .openPopup();
                 }, function() {
-                    alert("無法取得您的位置，請檢查定位權限");
+                    alert("Unable to retrieve your location. Please check location permissions.");
                 });
             } else {
-                alert("您的瀏覽器不支持定位功能");
+                alert("Your browser does not support geolocation.");
             }
         }
 
