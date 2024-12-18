@@ -2,9 +2,6 @@ from flask import Flask, render_template, request
 from flask import redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, SubmitField, IntegerField
-from wtforms.validators import DataRequired, Length, EqualTo, Email, Optional
 from PIL import Image
 from io import BytesIO
 import secrets
@@ -97,7 +94,7 @@ def register_restaurant():
                     flash('Image file is too large. Maximum size allowed is 5MB.', 'error')
                     return redirect(url_for('register_restaurant'))
 
-                # 轉換圖片格式為 JPEG（或其他格式）
+                # 轉換圖片格式為 JPEG
                 image_file = convert_image_to_format(image, format='JPEG')
 
                 # 生成新的唯一文件名

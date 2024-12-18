@@ -19,13 +19,6 @@
             align-items: center;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
         .container {
             width: 100%;
             max-width: 400px;
@@ -93,6 +86,20 @@
             text-align: center;
             margin-top: 10px;
         }
+
+        /* 密碼眼睛圖示 */
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -100,7 +107,14 @@
         <h2>Sign In</h2>
         <form action="/login" method="post">
             <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+            
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Password" required>
+                <span class="password-toggle" onclick="togglePassword()">
+                    👁️
+                </span>
+            </div>
+            
             <button type="submit">Sign In</button>
         </form>
         <div class="register-link">
@@ -119,5 +133,20 @@
             <div class="error-message">{{ error_message }}</div>
         {% endif %}
     </div>
+
+    <script>
+        function togglePassword() {
+            var passwordField = document.getElementById('password');
+            var passwordIcon = document.querySelector('.password-toggle');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text'; // 顯示密碼
+                passwordIcon.textContent = '👁️'; // 改成閉眼圖示
+            } else {
+                passwordField.type = 'password'; // 隱藏密碼
+                passwordIcon.textContent = '🙈'; // 改成開眼圖示
+            }
+        }
+    </script>
 </body>
 </html>
