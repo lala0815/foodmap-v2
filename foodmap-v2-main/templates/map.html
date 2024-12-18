@@ -18,6 +18,7 @@
             text-align: center;
             margin: 30px 0;
         }
+
         .back-home-btn, .register-restaurant-btn {
             position: absolute;
             top: 10px;
@@ -40,7 +41,7 @@
         }
 
         .register-restaurant-btn {
-            right: 120px; /* 保證兩個按鈕不重疊 */
+            right: 120px;
         }
 
         .search-container {
@@ -74,33 +75,12 @@
             padding: 10px 20px;
             cursor: pointer;
             border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             text-decoration: none;
-        }
-
-        .current-location-btn img {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
         }
 
         .current-location-btn:hover {
             background-color: #e91111;
         }
-
-        .restaurant-list {
-            margin: 20px auto;
-            max-width: 600px;
-            text-align: left;
-        }
-
-        .restaurant-item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
     </style>
 </head>
 <body>
@@ -124,7 +104,6 @@
 
     <!-- 定位按鈕 -->
     <button class="current-location-btn" onclick="moveToCurrentLocation()">
-        <img src="https://img.icons8.com/ios-filled/50/ff6347/marker.png" alt="Location" />
         Current Location
     </button>
 
@@ -142,33 +121,32 @@
 
         // 顯示所有餐廳的函式
         function displayRestaurants(filteredRestaurants) {
-    // 清空所有標記
-    restaurantMarkers.forEach(marker => marker.remove());
-    restaurantMarkers.length = 0;
+            // 清空所有標記
+            restaurantMarkers.forEach(marker => marker.remove());
+            restaurantMarkers.length = 0;
 
-    filteredRestaurants.forEach(restaurant => {
-        const phone = restaurant.phone || 'No Data';
-        const rating = restaurant.rating || 'No Rating';
-        const image = restaurant.image ? `/images/${restaurant.image}` : 'default_image.jpg'; // 預設圖片
-        const description = restaurant.description || 'No Description';  // 若無描述則顯示 '無介紹'
-        const owner = restaurant.owner || 'No Owner Info';  // 若無負責人資訊則顯示 '無負責人'
+            filteredRestaurants.forEach(restaurant => {
+                const phone = restaurant.phone || 'No Data';
+                const rating = restaurant.rating || 'No Rating';
+                const image = restaurant.image ? `/images/${restaurant.image}` : 'default_image.jpg'; // 預設圖片
+                const description = restaurant.description || 'No Description';
+                const owner = restaurant.owner || 'No Owner Info';
 
-        const marker = L.marker([restaurant.latitude, restaurant.longitude])
-            .addTo(map)
-            .bindPopup(`
-                <b>${restaurant.name}</b><br>
-                Type: ${restaurant.type}<br>
-                Address: ${restaurant.address}<br>
-                Phone: ${phone}<br>
-                Rating: ${rating} <i class="fas fa-star"></i><br>
-                Owner: ${owner}<br>
-                <p>${description}</p>
-                <a href="/restaurant/${restaurant.name}">More Details</a>
-            `);
-        restaurantMarkers.push(marker);
-    });
-}
-
+                const marker = L.marker([restaurant.latitude, restaurant.longitude])
+                    .addTo(map)
+                    .bindPopup(`
+                        <b>${restaurant.name}</b><br>
+                        Type: ${restaurant.type}<br>
+                        Address: ${restaurant.address}<br>
+                        Phone: ${phone}<br>
+                        Rating: ${rating} <i class="fas fa-star"></i><br>
+                        Owner: ${owner}<br>
+                        <p>${description}</p>
+                        <a href="/restaurant/${restaurant.name}">More Details</a>
+                    `);
+                restaurantMarkers.push(marker);
+            });
+        }
 
         // 初始顯示所有餐廳
         displayRestaurants(restaurants);
@@ -180,16 +158,8 @@
                     var lat = position.coords.latitude;
                     var lon = position.coords.longitude;
 
-                    // 自定義 "當前位置" 的圖標顏色
-                    var currentLocationIcon = L.icon({
-                        iconUrl: 'https://img.icons8.com/ios-filled/50/ff6347/marker.png', // 使用不同顏色的標記圖標
-                        iconSize: [30, 30], // 設定標記的大小
-                        iconAnchor: [15, 30], // 標記的錨點
-                        popupAnchor: [0, -30] // 彈出框的錨點
-                    });
-
                     map.setView([lat, lon], 15);
-                    L.marker([lat, lon], { icon: currentLocationIcon }).addTo(map)
+                    L.marker([lat, lon]).addTo(map)
                         .bindPopup("Your Current Location")
                         .openPopup();
                 }, function() {
@@ -200,23 +170,57 @@
             }
         }
 
+        // 讀取 URL 參數
+        const urlParams = new URLSearchParams(window.location.search);
+        const latitude = urlParams.get('latitude');
+        const longitude = urlParams.get('longitude');
+        const restaurantName = urlParams.get('restaurant_name');
+        const restaurantType = urlParams.get('type') || 'No Type';
+        const restaurantAddress = urlParams.get('address') || 'No Address';
+        const restaurantPhone = urlParams.get('phone') || 'No Data';
+        const restaurantRating = urlParams.get('rating') || 'No Rating';
+        const restaurantOwner = urlParams.get('owner') || 'No Owner Info';
+        const restaurantDescription = urlParams.get('description') || 'No Description';
+
+        if (latitude && longitude) {
+            const lat = parseFloat(latitude);
+            const lon = parseFloat(longitude);
+
+            // 地圖設置
+            map.setView([lat, lon], 15);
+
+            // 新建標記
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup(`
+                    <b>${restaurantName}</b><br>
+                    Type: ${restaurantType}<br>
+                    Address: ${restaurantAddress}<br>
+                    Phone: ${restaurantPhone}<br>
+                    Rating: ${restaurantRating} <i class="fas fa-star"></i><br>
+                    Owner: ${restaurantOwner}<br>
+                    <p>${restaurantDescription}</p>
+                    <a href="/restaurant/${restaurantName}">More Details</a>
+                `).openPopup();
+        } else {
+            // 如果缺少必要的參數，顯示錯誤
+            console.error('Missing latitude or longitude in the URL parameters.');
+        }
+
         // 即時篩選餐廳
         document.getElementById('searchBox').addEventListener('input', function() {
-            const keyword = this.value.trim().toLowerCase();  // 取得並處理關鍵字
+            const keyword = this.value.trim().toLowerCase();
 
-            // 篩選餐廳
             const filteredRestaurants = restaurants.filter(restaurant => {
                 const nameMatch = restaurant.name.toLowerCase().includes(keyword);
                 const typeMatch = restaurant.type.toLowerCase().includes(keyword);
                 const addressMatch = restaurant.address.toLowerCase().includes(keyword);
-                const descriptionMatch = restaurant.description && restaurant.description.toLowerCase().includes(keyword); // 防止 description 是 undefined 或 null
+                const descriptionMatch = restaurant.description && restaurant.description.toLowerCase().includes(keyword);
 
-                return nameMatch || typeMatch || addressMatch || descriptionMatch;  // 如果任一條件成立則顯示
+                return nameMatch || typeMatch || addressMatch || descriptionMatch;
             });
 
-            displayRestaurants(filteredRestaurants);  // 顯示篩選後的餐廳
+            displayRestaurants(filteredRestaurants);
         });
-
     </script>
 </body>
 </html>

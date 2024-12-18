@@ -121,6 +121,17 @@
             display: block;
             margin-bottom: 5px;
         }
+        .flash-message {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #4CAF50; /* 可以根據需要改成綠色 */
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .flash-message .alert {
+            margin: 0;
+        }
 
     </style>
 </head>
@@ -166,6 +177,18 @@
 
                 <button type="submit">Submit Review</button>
             </form>
+            <!-- 顯示 Flash 訊息 -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-message">
+                        {% for category, message in messages %}
+                            <div class="alert {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <h2>{{ name }} Details</h2>
         </div>
         {% else %}
         <p>Please log in to submit a review.</p>

@@ -1,12 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request
+from flask import redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, TextAreaField, SubmitField, IntegerField
+from wtforms.validators import DataRequired, Length, EqualTo, Email, Optional
+from PIL import Image
+from io import BytesIO
+import secrets
 import pandas as pd
-import uuid  # 用於生成唯一的圖片名稱
+import uuid  
 import os
 import re
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # 替換為你的隨機密鑰
+app.secret_key = secrets.token_hex(16)  # 生成一個隨機的密鑰
 
 # 設置圖片儲存路徑
 IMAGE_FOLDER = os.path.join(os.getcwd(), 'static', 'images')
@@ -22,17 +30,37 @@ RESTAURANT_DATA_FILE = os.path.join(CSV_FOLDER, 'restaurants.csv')
 REVIEWS_FILE = os.path.join(CSV_FOLDER, 'reviews.csv')
 USER_DATA_FILE = os.path.join(CSV_FOLDER, 'users.csv')
 
-# 檢查用戶資料文件是否存在，若不存在則初始化
-if not os.path.exists(USER_DATA_FILE):
-    pd.DataFrame(columns=['username', 'password']).to_csv(USER_DATA_FILE, index=False)
-# 檢查餐廳評論文件是否存在，若不存在則初始化
-if not os.path.exists(REVIEWS_FILE):
-    pd.DataFrame(columns=['restaurant_name', 'username', 'rating', 'comment']).to_csv(REVIEWS_FILE, index=False)
-# 檢查餐廳資料文件是否存在，若不存在則初始化
-if not os.path.exists(RESTAURANT_DATA_FILE):
-    pd.DateFrame(columns= ['name','type','latitude','longitude','address','phone','owner','rating','image','description']).to_csv(RESTAURANT_DATA_FILE, index=False)
+def check_and_create_file(file_path, default_data):
+    """檢查檔案是否存在，若不存在則創建並初始化資料"""
+    if not os.path.exists(file_path):
+        default_data.to_csv(file_path, index=False)
+
+# 初始化 CSV 文件
+check_and_create_file(USER_DATA_FILE, pd.DataFrame(columns=['username', 'password']))
+check_and_create_file(REVIEWS_FILE, pd.DataFrame(columns=['restaurant_name', 'username', 'rating', 'comment']))
+check_and_create_file(RESTAURANT_DATA_FILE, pd.DataFrame(columns=['name', 'type', 'latitude', 'longitude', 'address', 'phone', 'owner', 'rating', 'image', 'description']))
+
+# 檢查圖片儲存資料夾是否存在，若不存在則創建
 if not os.path.exists(IMAGE_FOLDER):
-    os.makedirs(imgaes)
+    os.makedirs(IMAGE_FOLDER)
+
+def allowed_image(file):
+    """檢查圖片格式是否被允許"""
+    allowed_extensions = ['jpg', 'jpeg', 'png']
+    file_extension = file.filename.split('.')[-1].lower()
+    return file_extension in allowed_extensions
+
+def convert_image_to_format(image, format='JPEG'):
+    """將圖片轉換為指定格式"""
+    img = Image.open(image)
+    img = img.convert('RGB')  # 確保圖片是 RGB 格式，方便轉換
+    output = BytesIO()
+    img.save(output, format=format)
+    output.seek(0)
+    return output
+
+# 設定圖片檔案大小限制（例如 5MB）
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
 @app.route('/')
 def index():
@@ -47,35 +75,68 @@ def register_restaurant():
         # 獲取表單資料
         name = request.form.get('name').strip()
         type = request.form.get('type').strip()
-        latitude = request.form.get('latitude').strip()
-        longitude = request.form.get('longitude').strip()
+        latitude = float(request.form.get('latitude').strip())
+        longitude = float(request.form.get('longitude').strip())
         address = request.form.get('address').strip()
         phone = request.form.get('phone').strip()
         owner = request.form.get('owner').strip()
         description = request.form.get('description', '').strip()
 
         # 處理圖片上傳
-        images = request.files.getlist('images')  # 獲取多個圖片文件
+        images = request.files.getlist('images')
         image_filenames = []
-
-        # 上傳每個圖片
         for image in images:
-            if image.filename:  # 確保圖片名稱存在
-                # 確保圖片名稱是安全的
-                filename = secure_filename(image.filename)
-                # 生成唯一名稱
-                unique_filename = str(uuid.uuid4()) + '_' + filename
-                image_path = os.path.join(IMAGE_FOLDER, unique_filename)
-                image.save(image_path)
+            if image.filename:
+                # 檢查圖片格式
+                if not allowed_image(image):
+                    flash('Only JPG, JPEG, and PNG images are allowed.', 'error')
+                    return redirect(url_for('register_restaurant'))
+                
+                # 檢查圖片檔案大小
+                if image.content_length > MAX_IMAGE_SIZE:
+                    flash('Image file is too large. Maximum size allowed is 5MB.', 'error')
+                    return redirect(url_for('register_restaurant'))
+
+                # 轉換圖片格式為 JPEG（或其他格式）
+                image_file = convert_image_to_format(image, format='JPEG')
+
+                # 生成新的唯一文件名
+                unique_filename = str(uuid.uuid4()) + '.jpg'  # 設定為JPEG格式
+                converted_path = os.path.join(IMAGE_FOLDER, unique_filename)
+
+                # 儲存轉換後的圖片
+                with open(converted_path, 'wb') as f:
+                    f.write(image_file.read())  # 儲存轉換後的圖片
+
                 image_filenames.append(unique_filename)
 
-        # 如果沒有上傳圖片，使用預設值或留空
-        image_str = ','.join(image_filenames) if image_filenames else ''  # 空值
+        image_str = ','.join(image_filenames) if image_filenames else ''
 
         # 數據驗證：檢查必填欄位
         if not name or not type or not latitude or not longitude or not address or not phone:
-            error_message = 'All required fields (excluding image and description) are mandatory.！'
+            error_message = 'All required fields (excluding image and description) are mandatory！'
             return render_template('register-restaurant.html', error_message=error_message)
+
+        # 讀取現有餐廳資料
+        restaurant_df = pd.read_csv(RESTAURANT_DATA_FILE)
+
+        # 檢查餐廳名稱是否完全相同
+        duplicate_name = restaurant_df[restaurant_df['name'].str.lower() == name.lower()]
+
+        # 檢查經緯度是否相近（重複位置檢查）
+        is_latitude_close = abs(restaurant_df['latitude'].astype(float) - float(latitude)) < 0.0001
+        is_longitude_close = abs(restaurant_df['longitude'].astype(float) - float(longitude)) < 0.0001
+        duplicate_location = restaurant_df[is_latitude_close & is_longitude_close]
+
+        # 如果名稱重複，返回錯誤
+        if not duplicate_name.empty:
+            flash(f"Registration failed! A restaurant with the same name '{name}' already exists at: Address: {duplicate_name.iloc[0]['address']}. Please choose a different name.", 'error')
+            return redirect(url_for('register_restaurant'))
+
+        # 如果位置重複，返回錯誤
+        if not duplicate_location.empty:
+            flash(f"Registration failed! This location is already registered by: Name: {duplicate_location.iloc[0]['name']}, Address: {duplicate_location.iloc[0]['address']}. Please confirm the location and try again.", 'error')
+            return redirect(url_for('register_restaurant'))
 
         # 儲存餐廳資料至 CSV
         new_restaurant = pd.DataFrame({
@@ -85,19 +146,27 @@ def register_restaurant():
             'longitude': [longitude],
             'address': [address],
             'phone': [phone],
-            'owner': [owner],  # 儲存負責人名稱
-            'rating': [0],  # 初始評分為 0
-            'image': [image_str],  # 儲存圖片路徑字符串或空值
+            'owner': [owner],
+            'rating': [0],
+            'image': [image_str],
             'description': [description]
         })
 
-        # 讀取現有餐廳資料並合併新資料
-        restaurant_df = pd.read_csv(RESTAURANT_DATA_FILE)
+        # 將新的餐廳資料儲存至 CSV
         restaurant_df = pd.concat([restaurant_df, new_restaurant], ignore_index=True)
-        restaurant_df.to_csv(RESTAURANT_DATA_FILE, index=False)  # 儲存更新後的 CSV
-        
-        # 註冊成功後，跳轉到map頁面並聚焦該餐廳的位置
-        return redirect(url_for('map', restaurant_name=name, latitude=latitude, longitude=longitude))
+        restaurant_df.to_csv(RESTAURANT_DATA_FILE, index=False)
+
+        # 註冊成功後，跳轉到地圖頁面
+        return redirect(url_for('map',
+                                restaurant_name=name,
+                                latitude=latitude,
+                                longitude=longitude,
+                                type=type,
+                                address=address,
+                                phone=phone,
+                                rating=0,
+                                owner=owner,
+                                description=description))
 
     return render_template('register-restaurant.html')
 
@@ -150,8 +219,9 @@ def restaurant_details(restaurant_name):
 
         # 如果評論是空白，將其設為 None
         if not comment:
-            comment = None
+            comment = "No comment"
 
+        # 新增評論
         new_review = pd.DataFrame({
             'restaurant_name': [restaurant_name],
             'username': [username],
@@ -162,9 +232,16 @@ def restaurant_details(restaurant_name):
         reviews_df = pd.concat([reviews_df, new_review], ignore_index=True)
         reviews_df.to_csv(REVIEWS_FILE, index=False)
 
+        # 計算新的平均評分並四捨五入
         updated_rating = reviews_df[reviews_df['restaurant_name'] == restaurant_name]['rating'].mean()
-        restaurant_df.loc[restaurant_df['name'] == restaurant_name, 'rating'] = updated_rating
+        rounded_rating = round(updated_rating, 1)  # 四捨五入至小數點一位
+
+        # 更新餐廳評分
+        restaurant_df.loc[restaurant_df['name'] == restaurant_name, 'rating'] = rounded_rating
         restaurant_df.to_csv(RESTAURANT_DATA_FILE, index=False)
+
+        # 顯示成功訊息
+        flash('Your review has been submitted successfully!', 'success')
 
         return redirect(url_for('restaurant_details', restaurant_name=restaurant_name))
 
@@ -181,6 +258,7 @@ def restaurant_details(restaurant_name):
         reviews=reviews
     )
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -196,7 +274,8 @@ def login():
         # 驗證用戶名和密碼
         if username in users['username'].values:
             stored_password = users.loc[users['username'] == username, 'password'].values[0]
-            if password == stored_password:
+            # 檢查密碼是否正確
+            if check_password_hash(stored_password, password):
                 session['user'] = username
                 return redirect(url_for('index'))
 
@@ -206,7 +285,8 @@ def login():
 
     return render_template('login.html')
 
-# 註冊路由
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -214,7 +294,6 @@ def register():
         password = request.form.get('password').strip()
         confirm_password = request.form.get('confirm_password').strip()
 
-        
         # 檢查密碼複雜度
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$', password):
             error_message = '"Password must contain both uppercase and lowercase letters, as well as numbers, and be at least 6 characters long."'
@@ -236,18 +315,22 @@ def register():
             error_message = 'The username is already taken.'
             return render_template('register.html', error_message=error_message)
 
+        # 加密密碼
+        hashed_password = generate_password_hash(password)
+
         # 新增用戶
-        new_user = pd.DataFrame({'username': [username], 'password': [password]})
+        new_user = pd.DataFrame({'username': [username], 'password': [hashed_password]})
         users = pd.concat([users, new_user], ignore_index=True)
 
         # 儲存至 CSV
         users.to_csv(USER_DATA_FILE, index=False)
 
         # 註冊成功，顯示成功訊息並跳轉到登入頁面
-        flash('Registration successful! Please return to the login page.')
+        flash('Registration successful!')
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 @app.route('/logout')
 def logout():
