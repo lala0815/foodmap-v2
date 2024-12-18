@@ -1,2 +1,0 @@
-# taipiefoodmap
-lab for ntust
